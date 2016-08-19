@@ -56,13 +56,6 @@ class Meta(type):
 
         return cls
 
-    def __setattr__(cls, key, value):
-        raise AttributeError("Meta class is immutable.")
-
-    def __delattr__(cls, key, value):
-        raise AttributeError("Meta class is immutable.")
-
-
 class HaystackSerializerMeta(SerializerMetaclass):
 
     """
