@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, unicode_literals
 
+import json
 import operator
 
 from django.utils import six
@@ -108,13 +109,21 @@ class HaystackAutocompleteFilter(HaystackFilter):
 
         query_bits = []
         for field_name, query in filters.children:
-            for word in query.split(" "):
-                bit = queryset.query.clean(word.strip())
-                kwargs = {
-                    field_name: bit
-                }
-                query_bits.append(view.query_object(**kwargs))
-        return six.moves.reduce(operator.and_, filter(lambda x: x, query_bits))
+            if field_name == "forward": 
+                if query: 
+                    data = json.loads(query)
+                    query_fields = {str(k):queryset.query.clean(v) for k,v in data.items()}
+                    query_bits.append(view.query_object(**query_fields))
+            else:
+                for word in query.split(" "):
+                    bit = queryset.query.clean(word.strip())
+                    kwargs = { 
+                        field_name: bit 
+                    }   
+                    query_bits.append(view.query_object(**kwargs))
+
+        if len(query_bits) > 0:
+            return six.moves.reduce(operator.and_, filter(lambda x: x, query_bits))
 
 
 class HaystackGEOSpatialFilter(BaseHaystackFilterBackend):
